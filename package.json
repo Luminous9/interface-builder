@@ -1,10 +1,10 @@
 {
   "name": "boardgame-tracker",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server.js",
     "client": "cd client && npm start"
   },

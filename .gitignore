@@ -5,4 +5,5 @@
 .DS_Store
 yarn-error.log
 package-lock.json
-node_modules/
+/node_modules
+variables.env

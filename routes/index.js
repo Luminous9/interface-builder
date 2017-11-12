@@ -8,5 +8,6 @@ router.get('/api', (req, res) => {
 })
 
 router.get('/api/test', interfaceController.testInterfaceModel)
+router.get('/api/interfaces', interfaceController.getInterfaces)
 
 module.exports = router

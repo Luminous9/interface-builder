@@ -9,33 +9,44 @@ const fieldSchema = new Schema(
     label: {
       type: String,
       trim: true
+    },
+    type: {
+      type: String,
+      enum: ['text', 'number'],
+      required: 'Field type is required.'
     }
   },
-  { discriminatorKey: 'kind', _id: false }
+  { _id: false }
 )
 
-// Field discriminators
-const numberFieldSchema = new Schema(
-  {
-    value: {
-      type: Number,
-      required: 'Field value is required'
-    }
-  },
-  { _id: false }
-)
-const stringFieldSchema = new Schema(
-  {
-    value: {
-      type: String,
-      required: 'Field value is required'
-    }
-  },
-  { _id: false }
-)
+// Field discriminators, don't need here, will move elsewhere
+// const numberFieldSchema = new Schema(
+//   {
+//     value: {
+//       type: Number,
+//       required: 'Field value is required'
+//     }
+//   },
+//   { _id: false }
+// )
+// const stringFieldSchema = new Schema(
+//   {
+//     value: {
+//       type: String,
+//       required: 'Field value is required'
+//     }
+//   },
+//   { _id: false }
+// )
 
 // Main document
 const interfaceSchema = new Schema({
+  author: {
+    // to be changed to ref after making User model
+    type: String,
+    trim: true,
+    required: 'Interface author is required.'
+  },
   name: {
     type: String,
     trim: true,
@@ -57,8 +68,8 @@ interfaceSchema.pre('save', function(next) {
   // TODO make more resilient so slugs are unique
 })
 
-// Connecting discriminators
-interfaceSchema.path('layout').caster.discriminator('Number', numberFieldSchema)
-interfaceSchema.path('layout').caster.discriminator('String', stringFieldSchema)
+// Connecting discriminators, also move elsewhere
+// interfaceSchema.path('layout').caster.discriminator('Number', numberFieldSchema)
+// interfaceSchema.path('layout').caster.discriminator('String', stringFieldSchema)
 
 module.exports = mongoose.model('Interface', interfaceSchema)

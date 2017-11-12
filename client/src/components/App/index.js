@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
-import { test } from '../client'
-import './App.css'
+import { test } from '../../client'
+import './app.css'
 
 class App extends Component {
   constructor() {

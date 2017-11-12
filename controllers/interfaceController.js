@@ -7,8 +7,11 @@ exports.testInterfaceModel = async (req, res) => {
     name: 'test interface',
     for: 'some game',
     layout: [
-      [{ label: 'field1', type: 'text' }, { label: 'field2', type: 'number' }],
-      [{ label: 'field3', type: 'number' }]
+      [
+        { kind: 'String', label: 'field1', startValue: 'blank' },
+        { kind: 'Number', label: 'field2', startValue: 0 }
+      ],
+      [{ kind: 'Number', label: 'field3', startValue: 200 }]
     ]
   })
   await testInterface.save()

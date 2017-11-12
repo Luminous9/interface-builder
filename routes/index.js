@@ -1,9 +1,10 @@
 const express = require('express')
-const router = express.Router()
+const version = require('../package.json').version
 const interfaceController = require('../controllers/interfaceController')
+const router = express.Router()
 
 router.get('/api', (req, res) => {
-  res.json({ message: 'v. 0.1.0' })
+  res.json({ message: 'API version: ' + version })
 })
 
 router.get('/api/test', interfaceController.testInterfaceModel)

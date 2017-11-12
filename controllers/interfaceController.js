@@ -5,7 +5,7 @@ exports.testInterfaceModel = async (req, res) => {
   const testInterface = new Interface({
     name: 'test interface',
     for: 'some game',
-    rows: [
+    layout: [
       [{ kind: 'String', label: 'field1', value: 'blank' }, { kind: 'Number', label: 'field2', value: 0 }],
       [{ kind: 'Number', label: 'field3', value: 123 }]
     ]

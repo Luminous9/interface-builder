@@ -45,7 +45,7 @@ const interfaceSchema = new Schema({
     type: String,
     trim: true
   },
-  rows: [[fieldSchema]],
+  layout: [[fieldSchema]],
   slug: String
 })
 
@@ -58,7 +58,7 @@ interfaceSchema.pre('save', function(next) {
 })
 
 // Connecting discriminators
-interfaceSchema.path('rows').caster.discriminator('Number', numberFieldSchema)
-interfaceSchema.path('rows').caster.discriminator('String', stringFieldSchema)
+interfaceSchema.path('layout').caster.discriminator('Number', numberFieldSchema)
+interfaceSchema.path('layout').caster.discriminator('String', stringFieldSchema)
 
 module.exports = mongoose.model('Interface', interfaceSchema)

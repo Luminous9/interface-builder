@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
-import './app.css'
+import Builder from '../Builder'
+import styles from './app.module.css'
 
 class App extends Component {
   // constructor() {
@@ -12,8 +13,10 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
+      <div className={styles.app}>
         <h1>Keeper</h1>
+        <p>Demo below:</p>
+        <Builder />
       </div>
     )
   }

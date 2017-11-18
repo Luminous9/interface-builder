@@ -1,0 +1,17 @@
+.builder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.grid {
+  display: grid;
+  width: 100%;
+  max-width: 720px;
+  box-sizing: border-box;
+}
+
+.cell {
+  background-color: white;
+  border: 1px dashed rgb(172, 172, 172);
+}

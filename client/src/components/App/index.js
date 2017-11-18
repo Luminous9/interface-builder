@@ -14,8 +14,6 @@ class App extends Component {
   render() {
     return (
       <div className={styles.app}>
-        <h1>Keeper</h1>
-        <p>Demo below:</p>
         <Builder />
       </div>
     )

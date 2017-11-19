@@ -1,11 +1,11 @@
 {
   "name": "boardgame-tracker",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "",
   "main": "server.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "nodemon server.js",
+    "server": "nodemon --ignore client/ server.js",
     "client": "cd client && npm start"
   },
   "author": "Sonny Zhang",

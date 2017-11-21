@@ -9,18 +9,9 @@
   width: 100%;
   max-width: 720px;
   box-sizing: border-box;
-  border: 1px solid gray;
+  background-color: grey;
 }
 
 .cell {
-  background-color: gray;
-  /* border: 1px dashed rgb(172, 172, 172); */
   display: flex;
-}
-
-.field {
-  min-width: 50px;
-  flex-grow: 1;
-  background-color: coral;
-  border: 1px solid gray;
 }

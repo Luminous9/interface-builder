@@ -4,20 +4,40 @@ import { Draggable } from 'react-beautiful-dnd'
 import styles from './draggableField.module.css'
 
 const DraggableField = props => {
+  const getFieldStyles = (draggableStyle, isDragging, ref) => {
+    const styles = {
+      userSelect: 'none',
+      ...draggableStyle
+    }
+    let maxWidth
+    console.log(ref.clientWidth, props.spacing, props.fieldCount)
+    if (styles.transform && !styles.hasOwnProperty('position')) {
+      maxWidth = (ref.clientWidth - props.spacing * props.fieldCount) / (props.fieldCount + 1)
+      styles.transform = 'translate(200px, 0px)'
+    } else {
+      maxWidth = (ref.clientWidth - props.spacing * (props.fieldCount - 1)) / props.fieldCount
+    }
+    styles.maxWidth = maxWidth
+    return styles
+  }
+
   return (
     <Draggable draggableId={props.id}>
       {(provided, snapshot) => {
+        const placeholder = provided.placeholder ? (
+          <div key={'b' + props.id}>{provided.placeholder}</div>
+        ) : null
         return [
           <div
-            key={props.id + 'a'}
+            key={'a' + props.id}
             ref={provided.innerRef}
             className={styles.field}
             {...provided.dragHandleProps}
-            style={props.getStyles(provided.draggableStyle, snapshot.isDragging)}
+            style={getFieldStyles(provided.draggableStyle, snapshot.isDragging, props.rowRef)}
           >
             {props.value}
           </div>,
-          provided.placeholder
+          placeholder
         ]
       }}
     </Draggable>
@@ -26,8 +46,10 @@ const DraggableField = props => {
 
 DraggableField.propTypes = {
   id: PropTypes.string.isRequired,
-  getStyles: PropTypes.func.isRequired,
-  value: PropTypes.string
+  value: PropTypes.string,
+  rowRef: PropTypes.object,
+  spacing: PropTypes.number.isRequired,
+  fieldCount: PropTypes.number.isRequired
 }
 
 DraggableField.defaultProps = {

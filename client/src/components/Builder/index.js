@@ -1,7 +1,8 @@
 // page for building interfaces
 import React, { Component } from 'react'
-import { DragDropContext, Droppable } from 'react-beautiful-dnd'
+import { DragDropContext } from 'react-beautiful-dnd'
 import uniqid from 'uniqid'
+import DroppableRow from '../DroppableRow'
 import DraggableField from '../DraggableField'
 import styles from './builder.module.css'
 
@@ -11,76 +12,24 @@ class Builder extends Component {
     this.state = {
       gridStyles: {
         rows: [150, 150, 150], // unit is pixels (px)
-        columns: [1, 1] // unit is fractions (fr)
+        columns: [1] // unit is fractions (fr)
       },
       gridData: [
-        [
-          {
-            fields: [{ value: 'testing0', id: uniqid('f-') }, { value: 'testing1', id: uniqid('f-') }],
-            cellId: uniqid('c-')
-          },
-          {
-            fields: [{ value: 'testing2', id: uniqid('f-') }],
-            cellId: uniqid('c-')
-          }
-        ],
-        [
-          {
-            fields: [{ value: 'testing3', id: uniqid('f-') }],
-            cellId: uniqid('c-')
-          },
-          {
-            fields: [{ value: 'testing4', id: uniqid('f-') }],
-            cellId: uniqid('c-')
-          }
-        ],
-        [
-          {
-            fields: [{ value: 'testing5', id: uniqid('f-') }],
-            cellId: uniqid('c-')
-          },
-          {
-            fields: [{ value: 'testing6', id: uniqid('f-') }],
-            cellId: uniqid('c-')
-          }
-        ]
+        {
+          fields: [{ value: 'testing0', id: uniqid('f-') }, { value: 'testing1', id: uniqid('f-') }],
+          rowId: uniqid('c-')
+        },
+        {
+          fields: [{ value: 'testing3', id: uniqid('f-') }],
+          rowId: uniqid('c-')
+        },
+        {
+          fields: [{ value: 'testing5', id: uniqid('f-') }],
+          rowId: uniqid('c-')
+        }
       ],
       spacing: 2 // unit is pixels (px)
     }
-  }
-
-  generateLayout = () => {
-    return this.state.gridData.map((row, rowIndex) => {
-      return row.map((column, colIndex) => {
-        const cellId = this.state.gridData[rowIndex][colIndex].cellId
-        return (
-          // cell
-          <Droppable key={cellId} droppableId={cellId} direction="horizontal">
-            {(provided, snapshot) => (
-              <div
-                ref={provided.innerRef}
-                className={styles.cell}
-                style={{ backgroundColor: snapshot.isDraggingOver ? 'lightblue' : 'grey' }}
-              >
-                {this.state.gridData[rowIndex][colIndex].fields.map(field => {
-                  return (
-                    <DraggableField
-                      key={field.id}
-                      id={field.id}
-                      value={field.value}
-                      getStyles={(draggableStyle, isDragging) => {
-                        return this.getFieldStyles(draggableStyle, isDragging, rowIndex, colIndex)
-                      }}
-                    />
-                  )
-                })}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        )
-      })
-    })
   }
 
   getGridStyles = () => {
@@ -92,14 +41,6 @@ class Builder extends Component {
       gridGap: spacing,
       padding: `${spacing}px`
     }
-  }
-
-  getFieldStyles = (draggableStyle, isDragging, row, col) => {
-    const styles = {
-      userSelect: 'none',
-      ...draggableStyle
-    }
-    return styles
   }
 
   increaseSpacing = () => {
@@ -122,10 +63,10 @@ class Builder extends Component {
     })
   }
 
-  findCellById = (gridData, searchId) => {
+  findRowById = (gridData, searchId) => {
     let result = undefined
     for (var row = 0; row !== gridData.length; row++) {
-      result = gridData[row].find(cell => cell.cellId === searchId)
+      result = gridData.find(row => row.rowId === searchId)
       if (result !== undefined) {
         return result
       }
@@ -133,26 +74,28 @@ class Builder extends Component {
     return result
   }
 
-  reorderFields = (gridData, cellId, startIndex, endIndex) => {
-    const cell = this.findCellById(gridData, cellId)
-    const newFields = JSON.parse(JSON.stringify(cell.fields))
+  reorderFields = (gridData, rowId, startIndex, endIndex) => {
+    const row = this.findRowById(gridData, rowId)
+    const newFields = JSON.parse(JSON.stringify(row.fields))
     const movedField = newFields.splice(startIndex, 1)
     newFields.splice(endIndex, 0, movedField[0])
-    cell.fields = newFields
+    row.fields = newFields
     return gridData
   }
 
   moveFields = (gridData, startId, startIndex, endId, endIndex) => {
-    const startCell = this.findCellById(gridData, startId)
-    const endCell = this.findCellById(gridData, endId)
+    // find target rows in state
+    const startrow = this.findRowById(gridData, startId)
+    const endrow = this.findRowById(gridData, endId)
     // make deep copies of fields arrays
-    const newStartFields = JSON.parse(JSON.stringify(startCell.fields))
-    const newEndFields = JSON.parse(JSON.stringify(endCell.fields))
-
+    const newStartFields = JSON.parse(JSON.stringify(startrow.fields))
+    const newEndFields = JSON.parse(JSON.stringify(endrow.fields))
+    // move field
     const movedField = newStartFields.splice(startIndex, 1)
-    startCell.fields = newStartFields
     newEndFields.splice(endIndex, 0, movedField[0])
-    endCell.fields = newEndFields
+    // assign modified fields arrays back to rows
+    startrow.fields = newStartFields
+    endrow.fields = newEndFields
 
     return gridData
   }
@@ -198,7 +141,24 @@ class Builder extends Component {
           <button onClick={this.increaseSpacing}>+ Spacing</button>
           <button onClick={this.decreaseSpacing}>- Spacing</button>
           <div className={styles.grid} style={this.getGridStyles()}>
-            {this.generateLayout()}
+            {this.state.gridData.map(row => {
+              const rowId = row.rowId
+              return (
+                <DroppableRow key={rowId} id={rowId}>
+                  {rowRef =>
+                    row.fields.map(field => (
+                      <DraggableField
+                        key={field.id}
+                        id={field.id}
+                        value={field.value}
+                        rowRef={rowRef}
+                        spacing={this.state.spacing}
+                        fieldCount={row.fields.length}
+                      />
+                    ))}
+                </DroppableRow>
+              )
+            })}
           </div>
         </div>
       </DragDropContext>

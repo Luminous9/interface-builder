@@ -10,8 +10,5 @@
   max-width: 720px;
   box-sizing: border-box;
   background-color: grey;
-}
-
-.cell {
-  display: flex;
+  overflow: hidden;
 }

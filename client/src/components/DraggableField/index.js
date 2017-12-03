@@ -3,39 +3,43 @@ import PropTypes from 'prop-types'
 import { Draggable } from 'react-beautiful-dnd'
 import styles from './draggableField.module.css'
 
-const DraggableField = props => {
-  const getFieldStyles = (draggableStyle, isDragging, ref) => {
+const DraggableField = ({ id, width, value, spacing, adjustSize, placeholderWidth }) => {
+  const getFieldStyles = (draggableStyle, isDragging) => {
     const styles = {
+      margin: `0 ${spacing}px`,
       userSelect: 'none',
       ...draggableStyle
     }
-    let maxWidth
-    console.log(ref.clientWidth, props.spacing, props.fieldCount)
-    if (styles.transform && !styles.hasOwnProperty('position')) {
-      maxWidth = (ref.clientWidth - props.spacing * props.fieldCount) / (props.fieldCount + 1)
-      styles.transform = 'translate(200px, 0px)'
+    if (typeof width === 'number') {
+      styles.width = width
+    } else if (width === 'auto') {
+      if (styles.transform && adjustSize) {
+        const transformX = parseInt(styles.transform.match(/([-0-9])+(?=px,)/g)[0], 10)
+        if (transformX < 0) {
+          styles.transform = `translate(-${placeholderWidth}px, 0px)`
+        } else {
+          styles.transform = `translate(${placeholderWidth}px, 0px)`
+        }
+      }
     } else {
-      maxWidth = (ref.clientWidth - props.spacing * (props.fieldCount - 1)) / props.fieldCount
+      console.log('ERROR: invalid field width')
     }
-    styles.maxWidth = maxWidth
     return styles
   }
 
   return (
-    <Draggable draggableId={props.id}>
+    <Draggable draggableId={id}>
       {(provided, snapshot) => {
-        const placeholder = provided.placeholder ? (
-          <div key={'b' + props.id}>{provided.placeholder}</div>
-        ) : null
+        const placeholder = provided.placeholder ? <div key={'b' + id}>{provided.placeholder}</div> : null
         return [
           <div
-            key={'a' + props.id}
+            key={'a' + id}
             ref={provided.innerRef}
             className={styles.field}
             {...provided.dragHandleProps}
-            style={getFieldStyles(provided.draggableStyle, snapshot.isDragging, props.rowRef)}
+            style={getFieldStyles(provided.draggableStyle, snapshot.isDragging)}
           >
-            {props.value}
+            {value}
           </div>,
           placeholder
         ]
@@ -46,14 +50,16 @@ const DraggableField = props => {
 
 DraggableField.propTypes = {
   id: PropTypes.string.isRequired,
+  width: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   value: PropTypes.string,
-  rowRef: PropTypes.object,
   spacing: PropTypes.number.isRequired,
-  fieldCount: PropTypes.number.isRequired
+  adjustSize: PropTypes.bool.isRequired,
+  placeholderWidth: PropTypes.number
 }
 
 DraggableField.defaultProps = {
-  value: ''
+  value: '',
+  placeholderWidth: null
 }
 
 export default DraggableField

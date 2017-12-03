@@ -16,18 +16,28 @@ class Builder extends Component {
       },
       gridData: [
         {
-          fields: [{ value: 'testing0', id: uniqid('f-') }, { value: 'testing1', id: uniqid('f-') }],
+          fields: [
+            { width: 'auto', value: 'testing0', id: uniqid('f-') },
+            { width: 'auto', value: 'testing1', id: uniqid('f-') }
+          ],
+          flexibleChildren: 2,
+          flexibleSpacePercent: 100,
           rowId: uniqid('c-')
         },
         {
-          fields: [{ value: 'testing3', id: uniqid('f-') }],
+          fields: [{ width: 'auto', value: 'testing3', id: uniqid('f-') }],
+          flexibleChildren: 1,
+          flexibleSpacePercent: 100,
           rowId: uniqid('c-')
         },
         {
-          fields: [{ value: 'testing5', id: uniqid('f-') }],
+          fields: [{ width: 'auto', value: 'testing5', id: uniqid('f-') }],
+          flexibleChildren: 1,
+          flexibleSpacePercent: 100,
           rowId: uniqid('c-')
         }
       ],
+      draggedField: null,
       spacing: 2 // unit is pixels (px)
     }
   }
@@ -38,8 +48,8 @@ class Builder extends Component {
     return {
       gridTemplateRows: rows.reduce((total, row) => `${total} ${row}px`, ''),
       gridTemplateColumns: columns.reduce((total, column) => `${total} ${column}fr`, ''),
-      gridGap: spacing,
-      padding: `${spacing}px`
+      gridGap: spacing * 2,
+      padding: `${spacing * 2}px ${spacing}px`
     }
   }
 
@@ -64,13 +74,7 @@ class Builder extends Component {
   }
 
   findRowById = (gridData, searchId) => {
-    let result = undefined
-    for (var row = 0; row !== gridData.length; row++) {
-      result = gridData.find(row => row.rowId === searchId)
-      if (result !== undefined) {
-        return result
-      }
-    }
+    const result = gridData.find(row => row.rowId === searchId)
     return result
   }
 
@@ -91,46 +95,60 @@ class Builder extends Component {
     const newStartFields = JSON.parse(JSON.stringify(startrow.fields))
     const newEndFields = JSON.parse(JSON.stringify(endrow.fields))
     // move field
-    const movedField = newStartFields.splice(startIndex, 1)
-    newEndFields.splice(endIndex, 0, movedField[0])
+    const movedField = newStartFields.splice(startIndex, 1)[0]
+    newEndFields.splice(endIndex, 0, movedField)
     // assign modified fields arrays back to rows
     startrow.fields = newStartFields
     endrow.fields = newEndFields
+    // adjust row info
+    if (movedField.width === 'auto') {
+      startrow.flexibleChildren--
+      endrow.flexibleChildren++
+    }
 
     return gridData
   }
 
-  onDragStart = () => {
+  onDragStart = initial => {
     document.body.classList.toggle('dragging', true)
+    this.setState(prevState => {
+      const { droppableId, index } = initial.source
+      const draggedField = this.findRowById(prevState.gridData, droppableId).fields[index]
+      return {
+        draggedField
+      }
+    })
   }
 
   onDragEnd = result => {
     const { source, destination } = result
     document.body.classList.toggle('dragging', false)
     if (!destination) {
-      // dropped outside of any droppables
-      return
+      this.setState({
+        draggedField: null
+      })
+    } else {
+      this.setState(prevState => {
+        let newGridData
+        if (source.droppableId !== destination.droppableId) {
+          newGridData = this.moveFields(
+            prevState.gridData,
+            source.droppableId,
+            source.index,
+            destination.droppableId,
+            destination.index
+          )
+        } else {
+          newGridData = this.reorderFields(
+            prevState.gridData,
+            source.droppableId,
+            source.index,
+            destination.index
+          )
+        }
+        return { gridData: newGridData, draggedField: null }
+      })
     }
-    this.setState(prevState => {
-      let newGridData
-      if (source.droppableId !== destination.droppableId) {
-        newGridData = this.moveFields(
-          prevState.gridData,
-          source.droppableId,
-          source.index,
-          destination.droppableId,
-          destination.index
-        )
-      } else {
-        newGridData = this.reorderFields(
-          prevState.gridData,
-          source.droppableId,
-          source.index,
-          destination.index
-        )
-      }
-      return { gridData: newGridData }
-    })
   }
 
   render() {
@@ -144,16 +162,24 @@ class Builder extends Component {
             {this.state.gridData.map(row => {
               const rowId = row.rowId
               return (
-                <DroppableRow key={rowId} id={rowId}>
-                  {rowRef =>
+                <DroppableRow
+                  key={rowId}
+                  id={rowId}
+                  flexChildren={row.flexibleChildren}
+                  flexSpacePercent={row.flexibleSpacePercent}
+                  spacing={this.state.spacing}
+                  draggedField={this.state.draggedField}
+                >
+                  {(adjustSize, placeholderWidth) =>
                     row.fields.map(field => (
                       <DraggableField
                         key={field.id}
                         id={field.id}
+                        width={field.width}
                         value={field.value}
-                        rowRef={rowRef}
+                        placeholderWidth={placeholderWidth}
                         spacing={this.state.spacing}
-                        fieldCount={row.fields.length}
+                        adjustSize={adjustSize}
                       />
                     ))}
                 </DroppableRow>
